@@ -10,40 +10,34 @@ const TargetURL = "https://en.hespress.com/";
 app.listen(PORT, () => console.log("Server running on PORT : " + PORT));
 
 let Articles = [];
-let i = 1;
-async function ScrapeData() {
+async function ScrapeData(numberOfPagesNeeded = 100) {
     try {
-        let numberOfPagesNeeded = 1;
-        // let Articles = [];
-        let Article = {
-            number: "",
-            date: "",
-            category: "",
-            title: "",
-            link: ""
-        };
+        let j = 1;
+        for (let index = 1; index <= numberOfPagesNeeded; index++) {
 
-        while (numberOfPagesNeeded < 500) {
-            i++;
-            numberOfPagesNeeded++;
-            let response = await cloudscraper.get(TargetURL + `?action=ajax_listing&paged=${numberOfPagesNeeded}`); // return String 
+            let response = await cloudscraper.get(TargetURL + `?action=ajax_listing&paged=${index}&all_listing=1`); // return String 
             const $ = await cheerio.load(response);
             const prettyMe = pretty($.html()); // The html() method sets or returns the content of the selected elements.
 
             $('.cover', prettyMe).each(function() {
-                console.log(i); // to fix this counter later
-                i++;
-                Article.number = i;
+                const Article = {
+                    number: 0,
+                    date: "",
+                    category: "",
+                    title: "",
+                    link: ""
+                };
+
+                Article.number = j;
+                j++;
                 Article.date = $(this).find('.date-card').text().trim();
                 Article.category = $(this).find('.cat').text().trim(); // category
                 Article.title = $(this).find('.card-title').text().trim();
                 Article.link = $(this).find('.card-img-top').find('a').attr('href');
                 Articles.push(Article);
             });
-            // console.clear(); // to add clear last line in console and not all console
-            console.log("Waiting...." + i);
-
-
+            console.clear(); // to add clear last line in console and not all console
+            console.log("Waiting...." + index);
         }
         console.log(Articles);
     } catch (error) {
