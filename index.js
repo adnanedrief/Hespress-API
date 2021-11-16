@@ -8,9 +8,16 @@ const app = express();
 const TargetURL = "https://en.hespress.com/";
 
 app.listen(PORT, () => console.log("Server running on PORT : " + PORT));
+let owner = {
+    Author: "Adnane Drief",
+    link: "github.com",
+    description: "For fun"
+};
+let Articles = [owner];
 
-let Articles = [];
-async function ScrapeData(numberOfPagesNeeded = 100) {
+async function ScrapeData(numberOfPagesNeeded = 2) {
+    //res.render("Waiting...");
+    // let numberOfPagesNeeded = 3;
     try {
         let j = 1;
         for (let index = 1; index <= numberOfPagesNeeded; index++) {
@@ -40,11 +47,15 @@ async function ScrapeData(numberOfPagesNeeded = 100) {
             console.log("Waiting...." + index);
         }
         console.log(Articles);
+        // res.send(Articles);
+        // Articles = []; // to clear last data send after the data received , for not having any conflict
     } catch (error) {
         console.log(error);
     }
-    app.get('/', function(req, res) {
-        res.send(Articles);
-    })
 }
-ScrapeData();
+app.get('/', async function(req, res) {
+    // res.send("Waiting...");
+    await ScrapeData();
+    res.send(Articles);
+    Articles = [owner]; // to clear last data send after the data received , for not having any conflict
+})
