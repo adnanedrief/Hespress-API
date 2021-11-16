@@ -2,6 +2,7 @@ const express = require("express");
 const cheerio = require("cheerio");
 const cloudscraper = require('cloudscraper');
 const pretty = require("pretty");
+const request = require('request');
 
 const PORT = 3000;
 const app = express();
@@ -15,25 +16,7 @@ let owner = {
 };
 let Articles = [owner];
 
-async function getContent(ID) {
-    let response = await cloudscraper.get(ID); // return String 
-    const $ = cheerio.load(response);
-    const prettyMe = pretty($.html()); // The html() method sets or returns the content of the selected elements.
-    return $('.article-content', prettyMe).find('p').text().trim();
-}
-async function fillcontent() {
-
-    Articles.forEach(async Article => {
-        let exractID = Article.link.substring(
-            Article.link.lastIndexOf("/") + 1,
-            Article.link.indexOf("-")
-        );
-        console.log(exractID);
-        Article.content = await getContent(`https://en.hespress.com/?action=ajax_next_post&id=${exractID}`);
-
-    });
-}
-async function ScrapeData(numberOfPagesNeeded = 2) {
+async function ScrapeData(numberOfPagesNeeded = 1) {
 
     try {
         let j = 1;
@@ -62,6 +45,19 @@ async function ScrapeData(numberOfPagesNeeded = 2) {
                 Article.title = $(this).find('.card-title').text().trim();
                 Article.img = $(this).find('.ratio-medium').find('img').attr('src');
                 Article.link = $(this).find('.card-img-top').find('a').attr('href');
+
+                let exractID = await Article.link.substring(
+                    Article.link.lastIndexOf("/") + 1,
+                    Article.link.indexOf("-")
+                );
+                console.log(exractID);
+                await request(TargetURL + `?action=ajax_next_post&id=${exractID}`, function(error, response, body) {
+                    //console.log(body);
+                    const $ = cheerio.load(body);
+                    const prettyMe = pretty($.html()); // The html() method sets or returns the content of the selected elements.
+                    Article.content = $('.article-content', prettyMe).find('p').text().trim();
+                    console.log(Article.content);
+                });
                 Articles.push(Article);
             });
             console.clear();
@@ -75,7 +71,6 @@ async function ScrapeData(numberOfPagesNeeded = 2) {
 
 app.get('/', async function(req, res) {
     await ScrapeData();
-    await fillcontent();
     res.send(Articles);
     Articles = [owner];
 })
