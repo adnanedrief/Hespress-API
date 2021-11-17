@@ -16,23 +16,24 @@ let owner = {
 };
 let Articles = [owner];
 
-async function ScrapeData(numberOfPagesNeeded = 1) {
+async function ScrapeData(numberOfPagesNeeded = 2) {
 
     try {
         let j = 1;
         // numberOfPagesNeeded = m/nbr nbr articiles per pages
         for (let index = 1; index <= numberOfPagesNeeded; index++) {
 
-            let response = await cloudscraper.get(TargetURL + `?action=ajax_listing&paged=${index}&all_listing=1`); // return String 
+            let response = await cloudscraper.get(TargetURL + `?action=ajax_listing&paged=${index}`); // return String 
             const $ = cheerio.load(response);
             const prettyMe = pretty($.html()); // The html() method sets or returns the content of the selected elements.
 
-            $('.cover', prettyMe).each(async function() {
+            $('.cover', prettyMe).each(function() {
                 const Article = {
                     number: 0,
                     date: "",
                     category: "",
                     title: "",
+                    id: "",
                     img: "",
                     link: "",
                     content: ""
@@ -46,31 +47,31 @@ async function ScrapeData(numberOfPagesNeeded = 1) {
                 Article.img = $(this).find('.ratio-medium').find('img').attr('src');
                 Article.link = $(this).find('.card-img-top').find('a').attr('href');
 
-                let exractID = await Article.link.substring(
+                let exractID = Article.link.substring(
                     Article.link.lastIndexOf("/") + 1,
                     Article.link.indexOf("-")
                 );
-                console.log(exractID);
-                await request(TargetURL + `?action=ajax_next_post&id=${exractID}`, function(error, response, body) {
-                    //console.log(body);
-                    const $ = cheerio.load(body);
-                    const prettyMe = pretty($.html()); // The html() method sets or returns the content of the selected elements.
-                    Article.content = $('.article-content', prettyMe).find('p').text().trim();
-                    console.log(Article.content);
-                });
+                Article.id = exractID;
+                // request(TargetURL + `?action=ajax_next_post&id=${exractID}`, function(_, _, body) {
+                //     const $ = cheerio.load(body);
+                //     const prettyMe = pretty($.html()); // The html() method sets or returns the content of the selected elements.
+                //     Article.content = $('.article-content', prettyMe).find('p').text().trim();
+                //     //console.log(Article.content);
+                // });
                 Articles.push(Article);
             });
             console.clear();
             console.log("Waiting...." + index);
         }
-        console.log(Articles);
+        //console.log(Articles);
     } catch (error) {
         console.log(error);
     }
 }
 
-app.get('/', async function(req, res) {
-    await ScrapeData();
+app.get('/:nbr', async function(req, res) {
+    //console.log(req.params.nbr);
+    await ScrapeData(req.params.nbr);
     res.send(Articles);
     Articles = [owner];
 })
