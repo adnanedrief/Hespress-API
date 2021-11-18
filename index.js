@@ -104,6 +104,7 @@ async function fillContent() {
 async function resetData() {
     Articles = [owner];
     ArticlesIDs = [];
+    ArticlesContent = [];
     fillthecontent = '';
 }
 app.get('/:nbr', async function(req, res) {
