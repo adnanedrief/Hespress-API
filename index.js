@@ -17,15 +17,14 @@ let owner = {
 let Articles = [owner];
 let ArticlesIDs = [];
 let ArticlesContent = [];
-
-async function ScrapeData(numberOfPagesNeeded = 2) {
+async function ScrapeData(numberOfPagesNeeded = 2, query = `?action=ajax_listing&paged=`) {
 
     try {
         let j = 1;
         // numberOfPagesNeeded = m/nbr nbr articiles per pages
         for (let index = 1; index <= numberOfPagesNeeded; index++) {
 
-            let response = await cloudscraper.get(TargetURL + `?action=ajax_listing&paged=${index}`); // return String 
+            let response = await cloudscraper.get(TargetURL + query + index); // return String 
             const $ = cheerio.load(response);
             const prettyMe = pretty($.html()); // The html() method sets or returns the content of the selected elements.
 
@@ -40,7 +39,6 @@ async function ScrapeData(numberOfPagesNeeded = 2) {
                     link: "",
                     content: ""
                 };
-
                 Article.number = j;
                 j++;
                 Article.date = $(this).find('.date-card').text().trim();
@@ -75,9 +73,9 @@ async function fillID() {
 }
 
 var fillthecontent; // used the global scoope cuz the request isn't a promise that can return me a promise to be handle
-async function requester(id) {
+async function requester(id, query = "?action=ajax_next_post&id=") {
 
-    request(`https://en.hespress.com/?action=ajax_next_post&id=${id}`, function(error, response, body) { // used their own hidden api to get content of the article cuz of cloudflare protection
+    request(TargetURL + query + id, function(error, response, body) {
         console.log("============\n");
         console.log('statusCode:', response.statusCode);
         const prettyMe = pretty(body);
@@ -93,7 +91,7 @@ async function slowedForLoop() {
     for (let j = 0; j < ArticlesIDs.length; j++) {
         requester(ArticlesIDs[j]);
         await timeout(Math.random() * 100 + 500)
-            // await this.timeout(Math.random() * 100 + 500) // Wait random amount of time between [0.5, 2.5] seconds
+            // await this.timeout(Math.random() * 100 + 500) // Wait random amount of time between [0.51, 0.59] seconds
     }
 }
 async function fillContent() {
