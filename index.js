@@ -63,36 +63,37 @@ async function ScrapeData(numberOfPagesNeeded = 2) {
         console.log(error);
     }
 }
-let fillthecontent;
+
+function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+var fillthecontent; // used the global scoope cuz the request isn't a promise that can return me a promise to be handle
 async function requester(id) {
-    request(`https://en.hespress.com/?action=ajax_next_post&id=${id}`, function(error, response, body) {
+
+    request(`https://en.hespress.com/?action=ajax_next_post&id=${id}`, function(error, response, body) { // used their own hidden api to get content of the article cuz of cloudflare protection
         console.log('statusCode:', response.statusCode);
         const prettyMe = pretty(body);
         const $ = cheerio.load(prettyMe);
         const content = $('.article-content', prettyMe).text().trim();
         // console.log(content);
         fillthecontent = content;
-
+        return fillthecontent;
     });
-}
-
-function timeout(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 
 async function fillID() {
-    Articles.slice(1).forEach((Article) => {
-            ArticlesIDs.push(Article.id)
-        })
+    Articles.slice(1).forEach((Article) => ArticlesIDs.push(Article.id))
         // console.log(ArticlesIDs);
 }
 
 async function slowedForLoop() {
     for (let j = 0; j < ArticlesIDs.length; j++) {
         requester(ArticlesIDs[j]);
-        await timeout(Math.random() * 100 + 500) // Wait random amount of time between [0.5, 2.5] seconds
-            // await this.timeout(Math.random() * 100 + 500) // Wait random amount of time between [0.5, 2.5] seconds
+        await timeout(Math.random() * 100 + 500)
+        console.log(fillthecontent);
+        // await this.timeout(Math.random() * 100 + 500) // Wait random amount of time between [0.5, 2.5] seconds
     }
 }
 
@@ -103,4 +104,5 @@ app.get('/:nbr', async function(req, res) {
     res.send(Articles);
     Articles = [owner];
     ArticlesIDs = [];
+
 })
