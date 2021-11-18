@@ -15,7 +15,7 @@ let owner = {
     description: "For fun"
 };
 let Articles = [owner];
-
+let ArticlesIDs = [];
 async function ScrapeData(numberOfPagesNeeded = 2) {
 
     try {
@@ -52,12 +52,7 @@ async function ScrapeData(numberOfPagesNeeded = 2) {
                     Article.link.indexOf("-")
                 );
                 Article.id = exractID;
-                // request(TargetURL + `?action=ajax_next_post&id=${exractID}`, function(_, _, body) {
-                //     const $ = cheerio.load(body);
-                //     const prettyMe = pretty($.html()); // The html() method sets or returns the content of the selected elements.
-                //     Article.content = $('.article-content', prettyMe).find('p').text().trim();
-                //     //console.log(Article.content);
-                // });
+
                 Articles.push(Article);
             });
             console.clear();
@@ -68,10 +63,44 @@ async function ScrapeData(numberOfPagesNeeded = 2) {
         console.log(error);
     }
 }
+let fillthecontent;
+async function requester(id) {
+    request(`https://en.hespress.com/?action=ajax_next_post&id=${id}`, function(error, response, body) {
+        console.log('statusCode:', response.statusCode);
+        const prettyMe = pretty(body);
+        const $ = cheerio.load(prettyMe);
+        const content = $('.article-content', prettyMe).text().trim();
+        // console.log(content);
+        fillthecontent = content;
+
+    });
+}
+
+function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+
+async function fillID() {
+    Articles.slice(1).forEach((Article) => {
+            ArticlesIDs.push(Article.id)
+        })
+        // console.log(ArticlesIDs);
+}
+
+async function slowedForLoop() {
+    for (let j = 0; j < ArticlesIDs.length; j++) {
+        requester(ArticlesIDs[j]);
+        await timeout(Math.random() * 100 + 500) // Wait random amount of time between [0.5, 2.5] seconds
+            // await this.timeout(Math.random() * 100 + 500) // Wait random amount of time between [0.5, 2.5] seconds
+    }
+}
 
 app.get('/:nbr', async function(req, res) {
-    //console.log(req.params.nbr);
     await ScrapeData(req.params.nbr);
+    await fillID();
+    await slowedForLoop();
     res.send(Articles);
     Articles = [owner];
+    ArticlesIDs = [];
 })
