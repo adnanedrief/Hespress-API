@@ -58,18 +58,18 @@ async function ScrapeData(numberOfPagesNeeded = 2, query = `?action=ajax_listing
             console.clear();
             console.log("Waiting...." + index);
         }
-        //console.log(Articles);
+        //console.log(Articles); // uncomment this if you want see logs in console 
     } catch (error) {
         console.log(error);
     }
 }
 
 function timeout(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 async function fillID() {
-    Articles.slice(1).forEach((Article) => ArticlesIDs.push(Article.id))
-        // console.log(ArticlesIDs);
+    Articles.slice(1).forEach((Article) => ArticlesIDs.push(Article.id));
+    // console.log(ArticlesIDs);
 }
 
 var fillthecontent; // used the global scoope cuz the request isn't a promise that can return me a promise to be handle
@@ -83,15 +83,15 @@ async function requester(id, query = "?action=ajax_next_post&id=") {
         const content = $('.article-content', prettyMe).text().trim().replace(/\s+/g, ' ');
         fillthecontent = content;
         ArticlesContent.push(fillthecontent);
-        console.log("============\n" + fillthecontent);
+        //console.log("============\n" + fillthecontent); // uncomment this if you want see logs in console 
     });
 }
 
 async function slowedForLoop() {
     for (let j = 0; j < ArticlesIDs.length; j++) {
         requester(ArticlesIDs[j]);
-        await timeout(Math.random() * 100 + 500)
-            // await this.timeout(Math.random() * 100 + 500) // Wait random amount of time between [0.51, 0.59] seconds
+        await timeout(Math.random() * 100 + 500); // Wait random amount of time between [0.51, 0.59] seconds
+        // await this.timeout(Math.random() * 100 + 500) 
     }
 }
 async function fillContent() {
@@ -101,13 +101,16 @@ async function fillContent() {
         i++
     })
 }
+async function resetData() {
+    Articles = [owner];
+    ArticlesIDs = [];
+    fillthecontent = '';
+}
 app.get('/:nbr', async function(req, res) {
     await ScrapeData(req.params.nbr);
     await fillID();
     await slowedForLoop();
     await fillContent();
     res.send(Articles);
-    Articles = [owner];
-    ArticlesIDs = [];
-    fillthecontent = '';
+    await resetData();
 })
