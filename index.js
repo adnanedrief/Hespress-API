@@ -16,6 +16,8 @@ let owner = {
 };
 let Articles = [owner];
 let ArticlesIDs = [];
+let ArticlesContent = [];
+
 async function ScrapeData(numberOfPagesNeeded = 2) {
 
     try {
@@ -67,42 +69,47 @@ async function ScrapeData(numberOfPagesNeeded = 2) {
 function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
+async function fillID() {
+    Articles.slice(1).forEach((Article) => ArticlesIDs.push(Article.id))
+        // console.log(ArticlesIDs);
+}
 
 var fillthecontent; // used the global scoope cuz the request isn't a promise that can return me a promise to be handle
 async function requester(id) {
 
     request(`https://en.hespress.com/?action=ajax_next_post&id=${id}`, function(error, response, body) { // used their own hidden api to get content of the article cuz of cloudflare protection
+        console.log("============\n");
         console.log('statusCode:', response.statusCode);
         const prettyMe = pretty(body);
         const $ = cheerio.load(prettyMe);
-        const content = $('.article-content', prettyMe).text().trim();
-        // console.log(content);
+        const content = $('.article-content', prettyMe).text().trim().replace(/\s+/g, ' ');
         fillthecontent = content;
-        return fillthecontent;
+        ArticlesContent.push(fillthecontent);
+        console.log("============\n" + fillthecontent);
     });
-}
-
-
-async function fillID() {
-    Articles.slice(1).forEach((Article) => ArticlesIDs.push(Article.id))
-        // console.log(ArticlesIDs);
 }
 
 async function slowedForLoop() {
     for (let j = 0; j < ArticlesIDs.length; j++) {
         requester(ArticlesIDs[j]);
         await timeout(Math.random() * 100 + 500)
-        console.log(fillthecontent);
-        // await this.timeout(Math.random() * 100 + 500) // Wait random amount of time between [0.5, 2.5] seconds
+            // await this.timeout(Math.random() * 100 + 500) // Wait random amount of time between [0.5, 2.5] seconds
     }
 }
-
+async function fillContent() {
+    let i = 0;
+    Articles.slice(1).forEach((Article) => {
+        Article.content = ArticlesContent[i];
+        i++
+    })
+}
 app.get('/:nbr', async function(req, res) {
     await ScrapeData(req.params.nbr);
     await fillID();
     await slowedForLoop();
+    await fillContent();
     res.send(Articles);
     Articles = [owner];
     ArticlesIDs = [];
-
+    fillthecontent = '';
 })
