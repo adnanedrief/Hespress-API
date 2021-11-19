@@ -1,3 +1,9 @@
+/* 
+    all rights reserved to : 
+        Author: "Adnane Drief",
+        Link: "https://github.com/adnanedrief",
+*/
+
 const express = require("express");
 const cheerio = require("cheerio");
 const cloudscraper = require('cloudscraper');
@@ -46,11 +52,17 @@ async function ScrapeData(numberOfPagesNeeded = 2, query = `?action=ajax_listing
                 Article.title = $(this).find('.card-title').text().trim();
                 Article.img = $(this).find('.ratio-medium').find('img').attr('src');
                 Article.link = $(this).find('.card-img-top').find('a').attr('href');
-
-                let exractID = Article.link.substring(
-                    Article.link.lastIndexOf("/") + 1,
-                    Article.link.indexOf("-")
-                );
+                let exractID;
+                if (TargetURL == 'https://hespress.com/') {
+                    exractID = Article.link.substring(
+                        Article.link.lastIndexOf("-") + 1,
+                        Article.link.lastIndexOf("."))
+                } else {
+                    exractID = Article.link.substring(
+                        Article.link.lastIndexOf("/") + 1,
+                        Article.link.indexOf("-"))
+                }
+                Article.link = decodeArabicURL(Article.link); // if the URL is in EN/FR it doesn't change
                 Article.id = exractID;
                 Articles.push(Article);
             });
@@ -80,7 +92,7 @@ async function requestContent(id, query = "?action=ajax_next_post&id=") {
         const $ = cheerio.load(prettyMe);
         const content = $('.article-content', prettyMe).text().trim().replace(/\s+/g, ' ');
         ArticlesContent.push(content);
-        //console.log("============\n" + fillthecontent); // uncomment this if you want see logs in console 
+        //console.log("============\n" + content); // uncomment this if you want see logs in console 
     });
 }
 
@@ -101,10 +113,12 @@ async function resetData() {
     Articles = [owner];
     ArticlesIDs = [];
     ArticlesContent = [];
-    fillthecontent = '';
     TargetURL = "https://en.hespress.com/";
 }
 
+function decodeArabicURL(href) {
+    return decodeURIComponent(href.toString());
+}
 async function callMeWithYourLanguage(nbr) {
     await ScrapeData(nbr);
     await fillIDs();
@@ -128,4 +142,7 @@ app.get('/arabic/:nbr', async(req, res) => {
     await callMeWithYourLanguage(req.params.nbr);
     res.send(Articles);
     await resetData();
+})
+app.get('/', async(req, res) => {
+    res.send(Object.assign({ Home: "This is the Home Page" }, (owner)));
 })
