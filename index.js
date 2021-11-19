@@ -11,17 +11,17 @@ const TargetURL = "https://en.hespress.com/";
 app.listen(PORT, () => console.log("Server running on PORT : " + PORT));
 let owner = {
     Author: "Adnane Drief",
-    link: "github.com",
-    description: "For fun"
+    link: "https://github.com/adnanedrief",
+    description: "Hespress-API using Nodejs,ExpressJS,Cheerio,Request that can give you latest news data from Hespress"
 };
 let Articles = [owner];
 let ArticlesIDs = [];
 let ArticlesContent = [];
+/// Every page contains 10 articles so if you need 40 articles you should pass to function 4 (that means 4 pages needeed)
 async function ScrapeData(numberOfPagesNeeded = 2, query = `?action=ajax_listing&paged=`) {
 
     try {
         let j = 1;
-        // numberOfPagesNeeded = m/nbr nbr articiles per pages
         for (let index = 1; index <= numberOfPagesNeeded; index++) {
 
             let response = await cloudscraper.get(TargetURL + query + index); // return String 
@@ -52,7 +52,6 @@ async function ScrapeData(numberOfPagesNeeded = 2, query = `?action=ajax_listing
                     Article.link.indexOf("-")
                 );
                 Article.id = exractID;
-
                 Articles.push(Article);
             });
             console.clear();
@@ -67,13 +66,12 @@ async function ScrapeData(numberOfPagesNeeded = 2, query = `?action=ajax_listing
 function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-async function fillID() {
+async function fillIDs() {
     Articles.slice(1).forEach((Article) => ArticlesIDs.push(Article.id));
     // console.log(ArticlesIDs);
 }
 
-var fillthecontent; // used the global scoope cuz the request isn't a promise that can return me a promise to be handle
-async function requester(id, query = "?action=ajax_next_post&id=") {
+async function requestContent(id, query = "?action=ajax_next_post&id=") {
 
     request(TargetURL + query + id, function(error, response, body) {
         console.log("============\n");
@@ -81,17 +79,15 @@ async function requester(id, query = "?action=ajax_next_post&id=") {
         const prettyMe = pretty(body);
         const $ = cheerio.load(prettyMe);
         const content = $('.article-content', prettyMe).text().trim().replace(/\s+/g, ' ');
-        fillthecontent = content;
-        ArticlesContent.push(fillthecontent);
+        ArticlesContent.push(content);
         //console.log("============\n" + fillthecontent); // uncomment this if you want see logs in console 
     });
 }
 
-async function slowedForLoop() {
+async function slowedRequest() {
     for (let j = 0; j < ArticlesIDs.length; j++) {
-        requester(ArticlesIDs[j]);
+        requestContent(ArticlesIDs[j]);
         await timeout(Math.random() * 100 + 500); // Wait random amount of time between [0.51, 0.59] seconds
-        // await this.timeout(Math.random() * 100 + 500) 
     }
 }
 async function fillContent() {
@@ -109,8 +105,8 @@ async function resetData() {
 }
 app.get('/:nbr', async function(req, res) {
     await ScrapeData(req.params.nbr);
-    await fillID();
-    await slowedForLoop();
+    await fillIDs();
+    await slowedRequest();
     await fillContent();
     res.send(Articles);
     await resetData();
