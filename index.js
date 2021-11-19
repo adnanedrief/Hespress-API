@@ -6,13 +6,13 @@ const request = require('request');
 
 const PORT = 3000;
 const app = express();
-const TargetURL = "https://en.hespress.com/";
+let TargetURL = "https://en.hespress.com/"; // this default value can be changed according to route chosen
 
 app.listen(PORT, () => console.log("Server running on PORT : " + PORT));
 let owner = {
     Author: "Adnane Drief",
-    link: "https://github.com/adnanedrief",
-    description: "Hespress-API using Nodejs,ExpressJS,Cheerio,Request that can give you latest news data from Hespress"
+    Link: "https://github.com/adnanedrief",
+    Description: "Hespress-API using Nodejs,ExpressJS,Cheerio,Request that can give you latest news data from Hespress"
 };
 let Articles = [owner];
 let ArticlesIDs = [];
@@ -102,12 +102,30 @@ async function resetData() {
     ArticlesIDs = [];
     ArticlesContent = [];
     fillthecontent = '';
+    TargetURL = "https://en.hespress.com/";
 }
-app.get('/:nbr', async function(req, res) {
-    await ScrapeData(req.params.nbr);
+
+async function callMeWithYourLanguage(nbr) {
+    await ScrapeData(nbr);
     await fillIDs();
     await slowedRequest();
     await fillContent();
+}
+app.get('/french/:nbr', async(req, res) => {
+    TargetURL = "https://fr.hespress.com/";
+    await callMeWithYourLanguage(req.params.nbr);
+    res.send(Articles);
+    await resetData();
+})
+app.get('/english/:nbr', async(req, res) => {
+    TargetURL = "https://en.hespress.com/";
+    await callMeWithYourLanguage(req.params.nbr);
+    res.send(Articles);
+    await resetData();
+})
+app.get('/arabic/:nbr', async(req, res) => {
+    TargetURL = "https://hespress.com/";
+    await callMeWithYourLanguage(req.params.nbr);
     res.send(Articles);
     await resetData();
 })
