@@ -32,7 +32,7 @@ If you  need data of 2 pages : `yourdomaine.com/arabic/2`
 ```javascript
 npm i express cheerio cloudscraper request pretty nodemon
 ```
-##  Usage
+#  Usage
 
 ```javascript
 nodemon index.js
