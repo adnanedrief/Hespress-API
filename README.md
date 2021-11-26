@@ -39,7 +39,21 @@ nodemon index.js
 ```
 
 #  Demo
-### English Data
+## Home
+
+![home](https://raw.githubusercontent.com/adnanedrief/Hespress-API/main/Demo/home.png?token=ASH4O3WM5P2A6ZEQ3UU2BY3BVKL5I "home")
+
+## English News Data
+
+![](https://raw.githubusercontent.com/adnanedrief/Hespress-API/main/Demo/eng.png?token=ASH4O3V3SMTSVLDXTAFQS53BVKLRO)
+
+## French News Data
+
+![](https://raw.githubusercontent.com/adnanedrief/Hespress-API/main/Demo/fr.png?token=ASH4O3RPHSCRVFMU7KIJOX3BVKLRS)
+
+## Arabic News Data
+
+![](https://raw.githubusercontent.com/adnanedrief/Hespress-API/main/Demo/ar.png?token=ASH4O3WZU2MMC2DN2ABXKTDBVKLRK)
 
 # Licence
-Feel free to use this project, but don't claim it at yourself and mention credits.
+*> **Feel free to use this project, but don't claim it at yourself and mention credits.***
