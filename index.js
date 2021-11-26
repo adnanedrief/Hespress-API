@@ -18,7 +18,8 @@ app.listen(PORT, () => console.log("Server running on PORT : " + PORT));
 let owner = {
     Author: "Adnane Drief",
     Link: "https://github.com/adnanedrief",
-    Description: "Hespress-API using Nodejs,ExpressJS,Cheerio,Request that can give you latest news data from Hespress"
+    Description: "Hespress-API using Nodejs,ExpressJS,Cheerio,Request that can give you latest news data from Hespress",
+    Documentation:"https://github.com/adnanedrief/Hespress-API"
 };
 let Articles = [owner];
 let ArticlesIDs = [];
