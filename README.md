@@ -1,7 +1,7 @@
 # Hespress-API
 # Description
 
-Hespress-API using Nodejs,ExpressJS,Cheerio,Request that can give you latest news data from Hespress
+Hespress-API using Nodejs,ExpressJS,Cheerio,Request that can give you latest news data from Hespress in arabic,french and english
 
 ## Endpoints
 
