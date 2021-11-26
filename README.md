@@ -2,8 +2,18 @@
 # Description
 
 Hespress-API using Nodejs,ExpressJS,Cheerio,Request that can give you latest news data from Hespress in arabic,french and english
+# Demo 
 
-## Endpoints
+### Home Page
+https://hespress-api.adnanedrief.repl.co/
+### English Data
+https://hespress-api.adnanedrief.repl.co/english/2
+### French Data
+https://hespress-api.adnanedrief.repl.co/french/4
+### Arabic Data
+https://hespress-api.adnanedrief.repl.co/arabic/1
+
+# Endpoints
 
 Every page contains 10 articles so if you need 40 articles you should pass in the Endpoint 4 (that means 4 pages needed)
 
